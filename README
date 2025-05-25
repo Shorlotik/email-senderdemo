@@ -1,17 +1,4 @@
 Email Sender Demo — Mass Mailer with Unsubscribe
-Spring Boot-приложение для массовой email-рассылки с поддержкой:
-
-SMTP через mail.gemtoo.dev
-
-HTML-писем с вложениями
-
-кнопки отписки (Unsubscribe) и подтверждением
-
-трекингом подписки и логов рассылки
-
-PostgreSQL для хранения данных
-
-Docker и docker-compose для запуска
 
 1. Клонируй и перейди в проект
 git clone https://github.com/Shorlotik/email-senderdemo.git
@@ -42,4 +29,3 @@ VALUES
 String campaignId = "ezeewallet2";
 String subject = "Introducing eZeeWallet: Simplify your payments!";
 String htmlFilePath = "src/main/resources/Introducing eZeeWallet.html";
-

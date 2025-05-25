@@ -1,23 +1,30 @@
-Email Sender Demo — Mass Mailer with Unsubscribe
-Spring Boot-приложение для массовой email-рассылки с поддержкой:
+# Email Sender Demo — Mass Mailer with Unsubscribe
 
-SMTP через mail.gemtoo.dev
+## Описание проекта
 
-HTML-писем с вложениями
+Spring Boot-приложение для массовой email-рассылки с поддержкой следующих функций:
 
-кнопки отписки (Unsubscribe) и подтверждением
+- Отправка писем через SMTP (mail.gemtoo.dev)
+- Поддержка HTML-писем с вложениями
+- Кнопка отписки (Unsubscribe) с подтверждением
+- Трекинг подписки и логов рассылки
+- Хранение данных в PostgreSQL
+- Docker и docker-compose для удобного запуска
 
-трекингом подписки и логов рассылки
+## Быстрый старт
 
-PostgreSQL для хранения данных
+### 1. Клонирование репозитория
 
-Docker и docker-compose для запуска
-
-1. Клонируй и перейди в проект
+```bash
 git clone https://github.com/Shorlotik/email-senderdemo.git
 cd email-sender-demo
+```
 
-Создай таблицы вручную (через pgAdmin или psql):
+### 2. Настройка базы данных
+
+Создайте необходимые таблицы в PostgreSQL:
+
+```sql
 CREATE TABLE email_subscribers (
     email_address VARCHAR(255) PRIMARY KEY,
     is_subscribed BOOLEAN DEFAULT TRUE,
@@ -30,16 +37,75 @@ CREATE TABLE email_campaign_logs (
     campaign_id VARCHAR(100),
     sent_at TIMESTAMP DEFAULT NOW()
 );
-Пример наполнения email_subscribers
+```
+
+Пример наполнения таблицы подписчиков:
+
+```sql
 INSERT INTO email_subscribers (email_address, is_subscribed, mailbox_exists)
 VALUES
 ('test1@example.com', TRUE, TRUE),
 ('test2@example.com', TRUE, TRUE),
 ('test3@example.com', TRUE, TRUE);
+```
 
-Отправка писем
-В методе EmailSenderdemoApplication.sendCampaignEmails() указывается ID кампании, тема и путь до HTML-файла
+### 3. Запуск приложения
+
+Используйте Docker для запуска:
+
+```bash
+docker-compose up --build
+```
+
+## Настройка рассылки
+
+Для отправки писем измените параметры в методе `EmailSenderdemoApplication.sendCampaignEmails()`:
+
+```java
 String campaignId = "ezeewallet2";
 String subject = "Introducing eZeeWallet: Simplify your payments!";
 String htmlFilePath = "src/main/resources/Introducing eZeeWallet.html";
+```
 
+## Функциональность
+
+### Основные возможности
+
+- Массовая рассылка email-сообщений
+- Поддержка HTML-формата с возможностью вложения файлов
+- Автоматическое логирование отправленных писем
+- Управление подписками пользователей
+
+### Система отписки
+
+- Каждое письмо содержит ссылку для отписки
+- Подтверждение отписки через отдельную страницу
+- Возможность повторной подписки
+
+## Структура проекта
+
+```
+email-sender-demo/
+├── src/
+│   ├── main/
+│   │   ├── java/.../EmailSenderdemoApplication.java  # Основной класс приложения
+│   │   ├── resources/                               # HTML-шаблоны писем
+│   ├── test/                                        # Тесты
+├── docker-compose.yml                               # Конфигурация Docker
+├── Dockerfile                                       # Настройка образа приложения
+```
+
+## Настройки SMTP
+
+Приложение использует SMTP-сервер `mail.gemtoo.dev`. Настройки подключения можно изменить в файле `application.properties`.
+
+## Логирование
+
+Все отправленные письма логируются в таблицу `email_campaign_logs` с указанием:
+- Email адреса получателя
+- ID кампании
+- Времени отправки
+
+## Лицензия
+
+[Указать лицензию, если есть]

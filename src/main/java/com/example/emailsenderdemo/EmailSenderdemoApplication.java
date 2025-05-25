@@ -29,13 +29,12 @@ public class EmailSenderdemoApplication {
     public static void main(String[] args) {
         SpringApplication.run(EmailSenderdemoApplication.class, args);
 
-        // Пример вызова рассылки (можешь убрать, если запускаешь из контроллера или другого места)
         sendCampaignEmails();
     }
 
     // Метод рассылки
     public static void sendCampaignEmails() {
-        String campaignId = "ezeewallet86"; // меняй для новых рассылок
+        String campaignId = "ezeewallet86"; // менять для новых рассылок
         String subject = "Introducing eZeeWallet: Simplify your payments!";
         String htmlFilePath = "src/main/resources/Introducing eZeeWallet.html";
 

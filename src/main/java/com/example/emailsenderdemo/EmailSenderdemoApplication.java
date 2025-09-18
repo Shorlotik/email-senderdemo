@@ -9,36 +9,57 @@ import java.nio.file.Files;
 import java.util.Properties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
 
 @SpringBootApplication
 public class EmailSenderdemoApplication {
 
-    // Константы на уровне класса
-    static final String DB_URL = "jdbc:postgresql://localhost:5432/emaildb";
-    static final String DB_USER = "postgres";
-    static final String DB_PASS = "Shorlotik003";
-
-    static final String SMTP_HOST = "mail.gemtoo.dev";
-    static final int SMTP_PORT = 465;
-    static final String SMTP_USER = "m.prokopchik@gemtoo.dev";
-    static final String SMTP_PASS = "HhdSMdTOaH2qEki1YDojLZIxKtqFZWKq";
-
-    // лимит: 200 сообщений в минуту = 1 сообщение каждые 300 мс
-    static final int DELAY_MS_BETWEEN_EMAILS = 300;
-
     public static void main(String[] args) {
         SpringApplication.run(EmailSenderdemoApplication.class, args);
+    }
+}
 
+@Component
+class EmailCampaignRunner implements CommandLineRunner {
+
+    @Value("${spring.datasource.url}")
+    private String dbUrl;
+
+    @Value("${spring.datasource.username}")
+    private String dbUser;
+
+    @Value("${spring.datasource.password}")
+    private String dbPass;
+
+    @Value("${spring.mail.host}")
+    private String smtpHost;
+
+    @Value("${spring.mail.port}")
+    private int smtpPort;
+
+    @Value("${spring.mail.username}")
+    private String smtpUser;
+
+    @Value("${spring.mail.password}")
+    private String smtpPass;
+
+    @Value("${email.campaign.delay-ms}")
+    private int delayMsBetweenEmails;
+
+    @Override
+    public void run(String... args) throws Exception {
         sendCampaignEmails();
     }
 
     // Метод рассылки
-    public static void sendCampaignEmails() {
-        String campaignId = "ezeewallet86"; // менять для новых рассылок
-        String subject = "Introducing eZeeWallet: Simplify your payments!";
-        String htmlFilePath = "src/main/resources/Introducing eZeeWallet.html";
+    public void sendCampaignEmails() {
+        String campaignId = "demo_campaign_001"; // менять для новых рассылок
+        String subject = "Добро пожаловать в нашу рассылку!";
+        String htmlFilePath = "src/main/resources/email_template.html";
 
-        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS)) {
+        try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPass)) {
             List<String> recipients = new ArrayList<>();
 
             try (PreparedStatement stmt = conn.prepareStatement(
@@ -62,21 +83,21 @@ public class EmailSenderdemoApplication {
             String htmlContent = Files.readString(new File(htmlFilePath).toPath());
 
             Properties props = new Properties();
-            props.put("mail.smtp.host", SMTP_HOST);
-            props.put("mail.smtp.port", String.valueOf(SMTP_PORT));
+            props.put("mail.smtp.host", smtpHost);
+            props.put("mail.smtp.port", String.valueOf(smtpPort));
             props.put("mail.smtp.auth", "true");
             props.put("mail.smtp.ssl.enable", "true");
 
             Session session = Session.getInstance(props, new Authenticator() {
                 protected PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication(SMTP_USER, SMTP_PASS);
+                    return new PasswordAuthentication(smtpUser, smtpPass);
                 }
             });
 
             for (String recipient : recipients) {
                 try {
                     MimeMessage message = new MimeMessage(session);
-                    message.setFrom(new InternetAddress(SMTP_USER));
+                    message.setFrom(new InternetAddress(smtpUser));
                     message.setRecipient(Message.RecipientType.TO, new InternetAddress(recipient));
                     message.setSubject(subject);
 
@@ -108,7 +129,7 @@ public class EmailSenderdemoApplication {
                         logStmt.executeUpdate();
                     }
 
-                    Thread.sleep(DELAY_MS_BETWEEN_EMAILS);
+                    Thread.sleep(delayMsBetweenEmails);
                 } catch (Exception e) {
                     System.out.println("Ошибка при отправке на: " + recipient);
                     e.printStackTrace();
@@ -120,10 +141,10 @@ public class EmailSenderdemoApplication {
     }
 
     // Метод отписки
-    public static boolean unsubscribeEmail(String email) {
+    public boolean unsubscribeEmail(String email) {
         String updateSql = "UPDATE email_subscribers SET is_subscribed = FALSE WHERE email_address = ?";
 
-        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+        try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPass);
              PreparedStatement stmt = conn.prepareStatement(updateSql)) {
 
             stmt.setString(1, email);
